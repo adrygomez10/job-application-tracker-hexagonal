@@ -111,7 +111,7 @@ En PowerShell: `./scripts/test.ps1` y `./scripts/quality.ps1`. La suite completa
 | `BrowserWorkflowIT` | El recorrido diario completo con Playwright, comprobando que no haya desbordamiento horizontal en escritorio ni en móvil. |
 | `ArchitectureTest` | Fronteras entre capas y paquetes. |
 
-El código sigue [Google Java Style](https://google.github.io/styleguide/javaguide.html), aplicado con Spotless. Las reglas de [Checkstyle](config/checkstyle.xml) y [PMD](config/pmd.xml) se aplican a producción y tests, y cualquier infracción hace fallar la construcción:
+El código sigue el [perfil de estilo del proyecto](docs/code-style.md), aplicado con Spotless. Las reglas de [Checkstyle](config/checkstyle-clean-code.xml) y [PMD](config/pmd.xml) se aplican a producción y tests, y cualquier infracción hace fallar la construcción:
 
 | Criterio | Límite |
 |---|---|
@@ -133,3 +133,14 @@ Para trabajar desde un IDE necesitas un JDK 25. `./mvnw test` ejecuta los tests 
 ## Alcance
 
 Uso personal y local, con un solo usuario. No tiene API REST, adjuntos ni integraciones externas. El HTTP local no está preparado para exponerse a Internet. Ningún ejemplo, test ni captura contiene datos personales reales.
+
+## Estilo de código compartido
+
+El proyecto utiliza [Clean Code - Project Style 1.0](docs/code-style.md): cuatro espacios, 120 columnas y llaves de métodos y constructores en la línea siguiente. Spotless y Checkstyle comprueban las mismas reglas desde Maven, el precommit y el check independiente `Code style` de las pull requests.
+
+```sh
+docker compose -f compose.style.yaml run --rm --no-deps check
+docker compose -f compose.style.yaml run --rm --no-deps format
+```
+
+La guía documenta la instalación del precommit en cada clon y los límites de la comprobación automática.
