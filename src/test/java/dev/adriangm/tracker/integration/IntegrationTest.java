@@ -26,37 +26,48 @@ import org.springframework.web.context.WebApplicationContext;
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"server.shutdown=immediate", "spring.lifecycle.timeout-per-shutdown-phase=5s"})
+    properties = {"server.shutdown=immediate", "spring.lifecycle.timeout-per-shutdown-phase=5s"}
+)
 abstract class IntegrationTest {
-  static final String USER = "test-owner";
-  static final String PASSWORD = "test-only-password";
-  static final String HASH = "{bcrypt}" + new BCryptPasswordEncoder(4).encode(PASSWORD);
+    static final String USER = "test-owner";
+    static final String PASSWORD = "test-only-password";
+    static final String HASH = "{bcrypt}" + new BCryptPasswordEncoder(4).encode(PASSWORD);
 
-  @DynamicPropertySource
-  static void credentials(DynamicPropertyRegistry registry) {
-    registry.add("tracker.username", () -> USER);
-    registry.add("tracker.password-hash", () -> HASH);
-  }
+    @DynamicPropertySource
+    static void credentials(DynamicPropertyRegistry registry)
+    {
+        registry.add("tracker.username", () -> USER);
+        registry.add("tracker.password-hash", () -> HASH);
+    }
 
-  @Autowired ApplicationStore store;
-  @Autowired UnitOfWork work;
-  @Autowired ApplicationQueries queries;
-  @Autowired JdbcTemplate jdbc;
-  @Autowired WebApplicationContext context;
-  @LocalServerPort int port;
-  MockMvc mvc;
+    @Autowired
+    ApplicationStore store;
+    @Autowired
+    UnitOfWork work;
+    @Autowired
+    ApplicationQueries queries;
+    @Autowired
+    JdbcTemplate jdbc;
+    @Autowired
+    WebApplicationContext context;
+    @LocalServerPort
+    int port;
+    MockMvc mvc;
 
-  @BeforeEach
-  void reset() {
-    jdbc.execute("TRUNCATE job_applications CASCADE");
-    mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-  }
+    @BeforeEach
+    void reset()
+    {
+        jdbc.execute("TRUNCATE job_applications CASCADE");
+        mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+    }
 
-  JobApplication seed() {
-    return work.required(() -> store.create(saved()));
-  }
+    JobApplication seed()
+    {
+        return work.required(() -> store.create(saved()));
+    }
 
-  JobApplication read(UUID id) {
-    return queries.detail(id).orElseThrow();
-  }
+    JobApplication read(UUID id)
+    {
+        return queries.detail(id).orElseThrow();
+    }
 }

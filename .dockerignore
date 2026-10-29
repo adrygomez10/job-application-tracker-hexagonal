@@ -5,3 +5,4 @@ target
 backups
 .idea
 .vscode
+.venv-style/

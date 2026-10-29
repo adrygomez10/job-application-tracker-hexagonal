@@ -21,106 +21,113 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 class ArchitectureTest {
-  private final JavaClasses classes =
-      new ClassFileImporter()
-          .withImportOption(new ImportOption.DoNotIncludeTests())
-          .importPackages("dev.adriangm.tracker");
+    private final JavaClasses classes = new ClassFileImporter()
+        .withImportOption(new ImportOption.DoNotIncludeTests())
+        .importPackages("dev.adriangm.tracker");
 
-  @Test
-  void domainOnlyDependsOnJavaAndItself() {
-    noClasses()
-        .that()
-        .resideInAPackage("..domain..")
-        .should()
-        .dependOnClassesThat()
-        .resideOutsideOfPackages("java..", "..domain..")
-        .check(classes);
-  }
+    @Test
+    void domainOnlyDependsOnJavaAndItself()
+    {
+        noClasses()
+            .that()
+            .resideInAPackage("..domain..")
+            .should()
+            .dependOnClassesThat()
+            .resideOutsideOfPackages("java..", "..domain..")
+            .check(classes);
+    }
 
-  @Test
-  void applicationDoesNotKnowFrameworksOrAdapters() {
-    noClasses()
-        .that()
-        .resideInAPackage("..application..")
-        .should()
-        .dependOnClassesThat()
-        .resideOutsideOfPackages("java..", "..domain..", "..application..")
-        .check(classes);
-  }
+    @Test
+    void applicationDoesNotKnowFrameworksOrAdapters()
+    {
+        noClasses()
+            .that()
+            .resideInAPackage("..application..")
+            .should()
+            .dependOnClassesThat()
+            .resideOutsideOfPackages("java..", "..domain..", "..application..")
+            .check(classes);
+    }
 
-  @Test
-  void webCannotImportJpa() {
-    noClasses()
-        .that()
-        .resideInAPackage("..adapter.web..")
-        .should()
-        .dependOnClassesThat()
-        .resideInAnyPackage("..adapter.persistence..", "jakarta.persistence..", "org.hibernate..")
-        .check(classes);
-  }
+    @Test
+    void webCannotImportJpa()
+    {
+        noClasses()
+            .that()
+            .resideInAPackage("..adapter.web..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..adapter.persistence..", "jakarta.persistence..", "org.hibernate..")
+            .check(classes);
+    }
 
-  @Test
-  void persistenceCannotImportWeb() {
-    noClasses()
-        .that()
-        .resideInAPackage("..adapter.persistence..")
-        .should()
-        .dependOnClassesThat()
-        .resideInAPackage("..adapter.web..")
-        .check(classes);
-  }
+    @Test
+    void persistenceCannotImportWeb()
+    {
+        noClasses()
+            .that()
+            .resideInAPackage("..adapter.persistence..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage("..adapter.web..")
+            .check(classes);
+    }
 
-  @Test
-  void featureSlicesDoNotDependOnEachOther() {
-    slices()
-        .matching("..applications.application.(*)..")
-        .should()
-        .notDependOnEachOther()
-        .check(classes);
-  }
+    @Test
+    void featureSlicesDoNotDependOnEachOther()
+    {
+        slices().matching("..applications.application.(*)..").should().notDependOnEachOther().check(classes);
+    }
 
-  @Test
-  void webOnlyTalksToUseCasesAndQueries() {
-    noClasses()
-        .that()
-        .resideInAPackage("..adapter.web..")
-        .should()
-        .dependOnClassesThat()
-        .belongToAnyOf(ApplicationStore.class, UnitOfWork.class, VersionedUpdate.class)
-        .check(classes);
-  }
+    @Test
+    void webOnlyTalksToUseCasesAndQueries()
+    {
+        noClasses()
+            .that()
+            .resideInAPackage("..adapter.web..")
+            .should()
+            .dependOnClassesThat()
+            .belongToAnyOf(ApplicationStore.class, UnitOfWork.class, VersionedUpdate.class)
+            .check(classes);
+    }
 
-  @Test
-  void onlyDomainAndPersistenceRebuildSnapshots() {
-    var snapshots =
-        Set.of(JobApplication.class, Interview.class, FollowUpTask.class, TimelineEntry.class)
+    @Test
+    void onlyDomainAndPersistenceRebuildSnapshots()
+    {
+        var snapshots = Set
+            .of(JobApplication.class, Interview.class, FollowUpTask.class, TimelineEntry.class)
             .stream()
             .map(Class::getName)
             .toList();
-    noClasses()
-        .that()
-        .resideOutsideOfPackages("..domain..", "..adapter.persistence..")
-        .should()
-        .callConstructorWhere(
-            DescribedPredicate.describe(
-                "a snapshot constructor",
-                (JavaConstructorCall call) -> snapshots.contains(call.getTargetOwner().getName())))
-        .check(classes);
-  }
+        noClasses()
+            .that()
+            .resideOutsideOfPackages("..domain..", "..adapter.persistence..")
+            .should()
+            .callConstructorWhere(
+                DescribedPredicate
+                    .describe(
+                        "a snapshot constructor",
+                        (JavaConstructorCall call) -> snapshots.contains(call.getTargetOwner().getName())
+                    )
+            )
+            .check(classes);
+    }
 
-  @Test
-  void configurationIsOnlyAnAssemblyRoot() {
-    noClasses()
-        .that()
-        .resideOutsideOfPackage("..configuration..")
-        .should()
-        .dependOnClassesThat()
-        .resideInAPackage("..configuration..")
-        .check(classes);
-  }
+    @Test
+    void configurationIsOnlyAnAssemblyRoot()
+    {
+        noClasses()
+            .that()
+            .resideOutsideOfPackage("..configuration..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage("..configuration..")
+            .check(classes);
+    }
 
-  @Test
-  void productionUsesConstructorInjection() {
-    noFields().should().beAnnotatedWith(Autowired.class).check(classes);
-  }
+    @Test
+    void productionUsesConstructorInjection()
+    {
+        noFields().should().beAnnotatedWith(Autowired.class).check(classes);
+    }
 }
